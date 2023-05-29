@@ -53,6 +53,7 @@ function update_ipv64_client() {
 }
 
 function make_service_file_dev() {
+    ## ad conf file
     cat <<EOF >"${service_file}"
 [Unit]
 Description=node64.io client that is receiving tasks for dns, icmp and tracroute task.
