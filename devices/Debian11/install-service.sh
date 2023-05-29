@@ -42,9 +42,36 @@ function get_ipv64_client() {
 
 function update_ipv64_client() {
     cd /opt/ipv64_client/
-    git fetch --all
+    git checkout dev
+    git pull
+    ask_for_secret
+    make_service_file_dev
+    systemctl daemon-reload
+    systemctl enable "${service_name}"
+    systemctl start "${service_name}"
     pip3 install -r requirements.txt
-    systemctl restart node64_io
+}
+
+function make_service_file_dev() {
+    cat <<EOF >"${service_file}"
+[Unit]
+Description=node64.io client that is receiving tasks for dns, icmp and tracroute task.
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+WorkingDirectory=/opt/ipv64_client/
+Environment="Node64Secret=${secret}"
+Environment="Node64Color=True"
+RestartSec=30
+ExecStart=$(which python3) node64.py 
+
+[Install]
+WantedBy=network-online.target
+EOF
+    #ExecStart=$(which python3) ipv64_client.py ${secret} | tee -a ${log_file_path}
 }
 
 function ask_for_secret() {
